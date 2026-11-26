@@ -1,0 +1,6 @@
+build/
+cmake-build-*/
+*.vst3
+*.zip
+.vs/
+.DS_Store
