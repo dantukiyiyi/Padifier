@@ -1,0 +1,42 @@
+name: Build Padifier VST3
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build VST3
+        run: cmake --build build --config Release --target Padifier_VST3
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $src = "build/Padifier_artefacts/Release/VST3/Padifier.vst3"
+          Compress-Archive -Path $src -DestinationPath "Padifier-Windows-VST3.zip" -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Padifier-VST3
+          path: Padifier-Windows-VST3.zip
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Padifier 1.0.${{ github.run_number }}
+          files: Padifier-Windows-VST3.zip
+          fail_on_unmatched_files: true
